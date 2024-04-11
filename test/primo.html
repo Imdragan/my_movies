@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>HOME</title>
+	<style>
+		body {
+            background-color: #000;
+            color: #fff;
+            margin: 0;
+            padding:0 ;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+		}
+
+		main {
+            width: 1600px;
+            height: 800px;
+			columns: 4;
+            border: 1px solid #ccc;
+            position:absolute;
+            overflow:scroll;
+		
+			/* margin:50px; */
+
+		}
+		img{
+			width: 100px;
+			display:block;
+			padding:2px;
+			/* border: 1.5px solid black; */
+		}
+		data{
+			width:100px;
+			display:block;
+			margin:20px;
+		}
+
+	
+	</style>
+</head>
+<body>
+
+	<a href="index.html">INDEX</a> 
+
+	<main></main>
+	<script>
+		run()
+		async function run() {
+
+	
+
+			let data
+
+			// Carichiamo il file locale "emoji.json"
+			await fetch("lista film.json")
+			.then(r => r.json())
+			.then( json => {
+					// Il contenuto del file emoji.json, una volta caricato
+					// viene assegnato alla nostra variabile "data"
+					data = json
+				})
+
+			// Grazie alla parola chiave "await" (sopra)
+			// siamo sicuri che a questo punto dell’esecuzione del programma
+			// i dati sono stati caricati e assegnati a "data"
+
+			
+			// const parent = document.querySelector('main')
+			
+			
+			data.sort(function(elementoA, elementoB) {
+
+				if (elementoA.anno > elementoB.anno) return 1
+				return -1
+
+			})
+
+			data = data.filter(function(elemento){
+				if (elemento.anno > 1940) return true
+			})
+
+			let output = ""
+			for (let i=0; i<data.length; i++) {
+				
+				
+	
+
+				output +="<div>"
+					
+					output += "<img src= './copertine/" + data[i].file+".jpg'>"
+					
+					
+				
+					output +="<div>"
+					output +="<div>"
+				
+				// output += data[i].file 
+				output += data[i].titolo + "<br>"
+				// output += data[i].regista + "<br>"
+				// output += data[i].anno + "<br>"
+				// output += data[i].durata + " min" + "<br>"
+				// output += data[i].genere + "<br>"
+				// output += data[i].produzione + "<br>"
+				// output += data[i].budget + " milioni" + "<br>"
+				// output += data[i].oscar + " oscar" + "<br>"
+				
+			
+				output += "</div>"
+
+			}
+			document.querySelector('main').innerHTML = output
+		}
+
+		
+	</script>
+</body>
+</html>

@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MOVIES</title>
+
+    <style>
+
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            background-color: #000; /* Sfondo nero */
+            color: #fff; /* Testo bianco */
+            font-size: 16px;
+        }
+
+        main {
+            position: relative;
+            width: 800px;
+            height: 600px;
+            border: 2px solid #ccc;
+        }
+
+        .dot {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            position: absolute;
+            cursor: pointer;
+        }
+
+        .tooltip {
+            position: absolute;
+            color:#000;
+            background-color: white;
+            border: 1px solid #ccc;
+            padding: 10px;
+            display: none;
+            max-width: 200px;
+        }
+
+        #buttons {
+            position: absolute;
+            top: 100px;
+            right: 100vh/2;
+        }
+
+        #buttons button {
+            margin: 5px;
+            align-items: center;
+            bottom:100px;
+            right:200px;
+        }
+
+        .legend {
+            position: absolute;
+            bottom: 170px;
+            right: 200px;
+        }
+
+        .legend-item {
+            margin-bottom: 10px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            display: inline-block;
+            margin-right: 5px;
+        }
+
+        img {
+            width: 100px;
+            display: block;
+        }
+
+        .axis-label {
+            position: absolute;
+            font-size: 14px;
+            font-weight: bold;
+            color: #fff; /* Testo bianco */
+        }
+
+        .axis-x {
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .axis-y {
+            top: 50%;
+            transform: translateY(-50%) rotate(-90deg);
+            left: -50px;
+        }
+
+        .axis-tick {
+            position: absolute;
+            background-color: #ccc;
+        }
+    </style>
+</head>
+<body>
+
+
+
+    <div id="buttons">
+        <button onclick="showYearDuration()">Anno - Durata</button>
+        <button onclick="showYearOscar()">Anno - Oscar</button>
+        <button onclick="showDurationOscar()">Durata - Oscar</button>
+    </div>
+    <main></main>
+    <div class="legend">
+        <div class="legend-item"><span class="legend-color" style="background-color: #fee440;"></span> Azione</div>
+        <div class="legend-item"><span class="legend-color" style="background-color: #D00000;"></span> Commedia</div>
+        <div class="legend-item"><span class="legend-color" style="background-color: #0000ff;"></span> Drammatico</div>
+    </div>
+
+    <script>
+        let data;
+
+        run();
+
+        async function run() {
+            await fetch("./assets/data/lista film.json")
+                .then(r => r.json())
+                .then(json => {
+                    data = json;
+                    showYearDuration();
+                });
+        }
+
+        function showYearDuration() {
+            let output = "";
+            for (let i = 0; i < data.length; i++) {
+                let scaledYear = mapValue(data[i].anno, 1940, 2023, 50, 750);
+                let scaledDuration = mapValue(data[i].durata, 0, 400, 550, 50); // Modifica il range di posizione sull'asse y
+
+                output += `<div class='dot' style='left: ${scaledYear}px; top: ${scaledDuration}px; background-color: ${getGenreColor(data[i].genere)};'
+                             onmouseover="showTooltip(this, '${data[i].titolo}', '${data[i].file}.jpg', ${data[i].anno}, ${data[i].durata}, ${data[i].oscar})"
+                             onmouseout="hideTooltip()"></div>`;
+            }
+
+            document.querySelector('main').innerHTML = output;
+
+            document.querySelector('main').innerHTML += `<div class="axis-label axis-x" style="color: #fff; left: 50%; bottom: -60px;">Anno</div>`;
+            document.querySelector('main').innerHTML += `<div class="axis-label axis-y" style="color: #fff; top: 50%; transform: translateY(-50%) rotate(-90deg); left: -120px;">Durata (min)</div>`;
+
+            for (let i = 1940; i <= 2023; i += 10) {
+                let scaledYear = mapValue(i, 1940, 2023, 50, 750);
+                document.querySelector('main').innerHTML += `<div class="axis-tick" style="left: ${scaledYear}px; bottom: -5px; width: 2px; height: 5px;"></div>`;
+                document.querySelector('main').innerHTML += `<div class="axis-label axis-x" style="color: #fff; left: ${scaledYear}px; bottom: -30px;">${i}</div>`;
+            }
+
+            for (let i = 0; i <= 400; i += 30) {
+                let scaledDuration = mapValue(i, 0, 400, 550, 50);
+                document.querySelector('main').innerHTML += `<div class="axis-tick" style="left: -5px; top: ${scaledDuration}px; width: 5px; height: 2px;"></div>`;
+                document.querySelector('main').innerHTML += `<div class="axis-label axis-y" style="color: #fff; top: ${scaledDuration}px; left: -35px;">${i}</div>`;
+            }
+        }
+
+        function showYearOscar() {
+            let output = "";
+            for (let i = 0; i < data.length; i++) {
+                let scaledYear = mapValue(data[i].anno, 1940, 2023, 50, 750);
+                let scaledOscar = mapValue(data[i].oscar, 0, 10, 550, 50);
+
+                output += `<div class='dot' style='left: ${scaledYear}px; top: ${scaledOscar}px; background-color: ${getGenreColor(data[i].genere)};'
+                             onmouseover="showTooltip(this, '${data[i].titolo}', '${data[i].file}.jpg', ${data[i].anno}, ${data[i].durata}, ${data[i].oscar})"
+                             onmouseout="hideTooltip()"></div>`;
+            }
+
+            document.querySelector('main').innerHTML = output;
+
+            document.querySelector('main').innerHTML += `<div class="axis-label axis-x" style="color: #fff; left: 50%; bottom: -60px;">Anno</div>`;
+            document.querySelector('main').innerHTML += `<div class="axis-label axis-y" style="color: #fff; top: 50%; transform: translateY(-50%) rotate(-90deg); left: -100px;">Oscar</div>`;
+
+            for (let i = 1940; i <= 2023; i += 10) {
+                let scaledYear = mapValue(i, 1940, 2023, 50, 750);
+                document.querySelector('main').innerHTML += `<div class="axis-tick" style="left: ${scaledYear}px; bottom: -5px; width: 2px; height: 5px;"></div>`;
+                document.querySelector('main').innerHTML += `<div class="axis-label axis-x" style="color: #fff; left: ${scaledYear}px; bottom: -30px;">${i}</div>`;
+            }
+
+            for (let i = 0; i <= 10; i += 1) {
+                let scaledOscar = mapValue(i, 0, 10, 550, 50);
+                document.querySelector('main').innerHTML += `<div class="axis-tick" style="left: -5px; top: ${scaledOscar}px; width: 5px; height: 2px;"></div>`;
+                document.querySelector('main').innerHTML += `<div class="axis-label axis-y" style="color: #fff; top: ${scaledOscar}px; left: -30px;">${i}</div>`;
+            }
+        }
+
+        function showDurationOscar() {
+            let output = "";
+            for (let i = 0; i < data.length; i++) {
+                let scaledDuration = mapValue(data[i].durata, 0, 400, 50, 750);
+                let scaledOscar = mapValue(data[i].oscar, 0, 10, 550, 50);
+
+                output += `<div class='dot' style='left: ${scaledDuration}px; top: ${scaledOscar}px; background-color: ${getGenreColor(data[i].genere)};'
+                             onmouseover="showTooltip(this, '${data[i].titolo}', '${data[i].file}.jpg', ${data[i].anno}, ${data[i].durata}, ${data[i].oscar})"
+                             onmouseout="hideTooltip()"></div>`;
+            }
+
+            document.querySelector('main').innerHTML = output;
+
+            document.querySelector('main').innerHTML += `<div class="axis-label axis-x" style="color: #fff; left: 50%; bottom: -60px;">Durata (min)</div>`;
+            document.querySelector('main').innerHTML += `<div class="axis-label axis-y" style="color: #fff; top: 50%; transform: translateY(-50%) rotate(-90deg); left: -100px;">Oscar</div>`;
+
+            for (let i = 0; i <= 400; i += 30) {
+                let scaledDuration = mapValue(i, 400, 0, 750, 50);
+                document.querySelector('main').innerHTML += `<div class="axis-tick" style="left: ${scaledDuration}px; bottom: -5px; width: 2px; height: 5px;"></div>`;
+                document.querySelector('main').innerHTML += `<div class="axis-label axis-x" style="color: #fff; left: ${scaledDuration}px; bottom: -30px;">${i}</div>`;
+            }
+
+            for (let i = 0; i <= 10; i += 1) {
+                let scaledOscar = mapValue(i, 0, 10, 550, 50);
+                document.querySelector('main').innerHTML += `<div class="axis-tick" style="left: -5px; top: ${scaledOscar}px; width: 5px; height: 2px;"></div>`;
+                document.querySelector('main').innerHTML += `<div class="axis-label axis-y" style="color: #fff; top: ${scaledOscar}px; left: -30px;">${i}</div>`;
+            }
+        }
+
+        function mapValue(value, min1, max1, min2, max2) {
+            return min2 + (value - min1) * (max2 - min2) / (max1 - min1);
+        }
+
+        function getGenreColor(genre) {
+            let colors = ["#fee440", "#D00000", "#0000ff"];
+            let genres = genre.split(',');
+            return colors[genres[0].trim().toLowerCase().charCodeAt(0) % colors.length];
+        }
+
+        function showTooltip(dot, title, image, year, duration, oscar) {
+            let tooltip = document.querySelector('.tooltip');
+            tooltip.innerHTML = `<img src='./assets/img/${image}' alt='${title}'><br>
+                                 <strong>${title}</strong><br>
+                                 Anno: ${year}<br>
+                                 Durata: ${duration} min<br>
+                                 Oscar: ${oscar}`;
+            tooltip.style.display = 'block';
+
+            let tooltipX = dot.getBoundingClientRect().left + dot.offsetWidth;
+            let tooltipY = dot.getBoundingClientRect().top - (tooltip.offsetHeight / 2) + (dot.offsetHeight / 2);
+            tooltip.style.left = `${tooltipX}px`;
+            tooltip.style.top = `${tooltipY}px`;
+        }
+
+        function hideTooltip() {
+            let tooltip = document.querySelector('.tooltip');
+            tooltip.style.display = 'none';
+        }
+    </script>
+    <div class="tooltip"></div>
+</body>
+</html>
